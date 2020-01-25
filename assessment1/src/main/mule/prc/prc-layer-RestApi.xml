@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<flow name="RestApiPostSub_Flow" doc:id="b755f213-0b72-47f7-b0e4-47c0595a0184"> 
+	<logger level="INFO" doc:name="Logger-Before RestApiGet" doc:id="27c92f63-5875-45ca-b092-6074eb934474" message="Fetching Records from RestApi"/>
+		
+		<flow-ref doc:name="sys-layerFlowForRestApiGet" doc:id="96d43f3b-f8d2-4757-87f4-0d657e8dab4f" name="sys-layerFlowForRestApiGet"/>
+		<logger level="INFO" doc:name="Logger-After RestApiGet" doc:id="0c860a78-d8f7-409b-be66-10e198729acc" message="Records Are Retrieved from RestApi"/>
+		<flow-ref doc:name="sys-layerFlowForObjectStoreInsert" doc:id="fe6728a5-fa65-414f-83fa-a190569dd904" name="sys-layerFlowForObjectStoreInsert"/>
+		<ee:transform doc:name="EmpData" doc:id="bc46940d-145a-4c5a-8b9c-c30fcbb42ca0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[output application/json
+---
+payload.data map ((payload)->
+{
+"employeeID": payload."id",
+"employee_name": payload."employee_name",
+"employee_salary": payload."employee_salary",
+"employee_age": payload."employee_age",
+"profile_image": payload."profile_image"
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="sys-layerFlowForBatchProcessing" doc:id="00c6ce35-276d-4bd2-83e1-77cabef782fc" name="sys-layerFlowForBatchProcessing"/>
+		<ee:transform doc:name="Transform Message" doc:id="1592c1fa-fdff-49ab-988f-5ad8983c73f2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"success":'true',
+"status":'Data Inserted'
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger-Flow End" doc:id="49711dcf-f844-46eb-a532-5bf5c78f68cf" message="EmpData Inserted using BatchProcessing"/>
+			
+	
+</flow>
+</mule>

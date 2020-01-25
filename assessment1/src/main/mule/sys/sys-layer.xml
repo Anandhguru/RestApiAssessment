@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	
+	
+	<flow name="sys-layerFlowForRestApiGet" doc:id="bf33d8a1-6a55-456c-a2af-f2771a894c78"> 
+	<http:request method="GET" doc:name="GetEmployeeDetails" doc:id="ef2b7215-84ad-47cb-8b24-a325b049f358" url="http://dummy.restapiexample.com/api/v1/employees"/>
+	</flow>
+	<flow name="sys-layerFlow-InsertIntoLocalDB" doc:id="a514bde7-07d6-4641-822b-a04f8d8c323c" >
+		<db:insert doc:name="InsertIntoLocalDB" doc:id="36382668-2e6b-4266-b2e5-f52e9e51f237" config-ref="Database_Config">
+			<db:sql >
+
+INSERT INTO empdetails (employeeID, employee_name, employee_salary,employee_age,profile_image)
+VALUES (:employeeID,:employee_name,:employee_salary,:employee_age,:profile_image);</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+"employeeID": payload."id",
+"employee_name": payload."employee_name",
+"employee_salary": payload."employee_salary",
+"employee_age": payload."employee_age",
+"profile_image": payload."profile_image"
+}]]]></db:input-parameters>
+		</db:insert>
+	</flow>
+	<flow name="sys-layerFlow1-SelectFromLocalDB" doc:id="953ab54b-43ea-4b39-9b35-9857f0ecd508" >
+		<db:select doc:name="SelectFromLocalDB" doc:id="0c14e07a-6b98-4402-9dba-0c57e7fe5796" config-ref="Database_Config">
+			<db:sql >SELECT * FROM empdetails WHERE employeeID = :id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": vars.employeeID
+}]]]></db:input-parameters>
+		</db:select>
+	</flow>
+	<flow name="sys-layerFlowForObjectStoreInsert" doc:id="d8b1f949-9e50-469f-8628-26a3847fdf7d" >
+		<os:store doc:name="Insert EmpDetails" doc:id="82091b43-816a-4075-a82e-8bc5ce47acfd" key="empDetails">
+			<os:value ><![CDATA[#[payload.data map ((payload)->
+{
+"employeeID": payload."id",
+"employee_name": payload."employee_name",
+})]]]></os:value>
+		</os:store>
+	</flow>
+	<flow name="sys-layerFlowForBatchProcessing" doc:id="fb0618d2-5609-4929-ae29-ad377f2968c6" >
+		<db:bulk-insert doc:name="Bulk insertEmployeeData" doc:id="98c39b48-794e-44ca-a6dc-00ac40ec4580" config-ref="Database_Config">
+						<db:sql>INSERT INTO empdetails (employeeID, employee_name, employee_salary,employee_age,profile_image)
+VALUES (:employeeID,:employee_name,:employee_salary,:employee_age,:profile_image);</db:sql>
+					</db:bulk-insert>
+	
+	
+</flow>
+</mule>

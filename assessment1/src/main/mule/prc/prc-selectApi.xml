@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<sub-flow name="prc-selectApiSub_Flow" doc:id="b89af1cb-1fc2-4dc8-97e7-735b7d7b182b" >
+		<logger level="INFO" doc:name="Started Flow for get Employee details" doc:id="8e2b802a-e5d5-40e5-8b22-041477e3620c" message="Started flow for select data from localDB"/>
+		<set-variable value="#[attributes.headers.employeeID]" doc:name="employeeIDVar" doc:id="469ef79a-f5b5-494a-8c2f-9232caaf6c7c" variableName="employeeID"/>
+		<os:retrieve doc:name="Retrieve" doc:id="094b9070-6e48-447a-8ab3-fdb718763547" key="empDetails"/>
+		<set-payload value="#[payload as Array]" doc:name="Set PayloadToJson" doc:id="11c3fc2e-b5f4-448a-b819-31530d0e8803" mimeType="application/json"/>
+		<choice doc:name="Choice" doc:id="4a0bff50-5a29-4fef-bc41-8f78035a8cfc" >
+			<when expression="#[payload != null and (payload.employeeID contains vars.employeeID)]">
+				<logger level="INFO" doc:name="Logger" doc:id="4d2a509a-b3da-42d7-ae8b-957d1eb34281" message="#['Information Reterieved from Object Store']"/>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="sys-layerFlow1-SelectFromLocalDB" doc:id="183183b5-6ef9-4e10-a6b2-6229e36cd75e" name="sys-layerFlow1-SelectFromLocalDB" />
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="5450717f-2532-4618-9849-cac34345b062" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="data retrieved" doc:id="a5a84db6-5f50-4170-a33d-bef2e4f14563" message="data retrieved"/>
+	</sub-flow>
+</mule>

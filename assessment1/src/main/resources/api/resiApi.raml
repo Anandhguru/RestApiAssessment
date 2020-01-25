@@ -1,0 +1,29 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/a9d63143-c9bb-41ae-9794-d62c6b4001c2/ # baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/4944467f-2915-4d86-9368-31613bf0c60d/ # 
+title: Assessment
+mediaType: [application/json]
+types: 
+  abc: !include type.raml
+/restApi:
+  post:
+    responses:
+      201:
+        body:
+            type: abc
+            example: !include example1.raml
+/insertApi:            
+  post:
+    responses:
+      201:
+        body:
+            type: abc
+            example: !include example1.raml
+/selectApi:
+  get:
+    headers:
+      employeeID: string
+    responses:
+      200:
+        body:
+            example: !include example.raml
+ 
